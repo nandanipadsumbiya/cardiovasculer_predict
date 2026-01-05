@@ -13,74 +13,106 @@ st.set_page_config(
 st.markdown("""
 <style>
 html, body, [class*="css"] {
-    background-color: #f9fafb !important;
-    color: #111827 !important;
+    background-color: #eef2f7 !important;
+    color: #0f172a !important;
+    font-family: 'Segoe UI', sans-serif;
 }
 
-.main-card {
-    background: white;
-    padding: 30px;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+.card {
+    background: #ffffff;
+    padding: 28px;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
 }
 
 .header {
     text-align: center;
-    margin-bottom: 30px;
+    padding: 20px 0 30px 0;
 }
 
 .header h1 {
-    color: #2563eb;
+    font-size: 34px;
     font-weight: 800;
+    color: #1e40af;
 }
 
 .header p {
-    color: #6b7280;
-    font-size: 16px;
+    font-size: 15px;
+    color: #475569;
 }
 
 .section-title {
+    font-size: 18px;
     font-weight: 700;
+    margin-bottom: 18px;
     color: #1f2937;
-    margin-bottom: 15px;
 }
 
-.result-box {
+.stButton > button {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.stButton > button:hover {
+    background: linear-gradient(135deg, #1e40af, #1e3a8a);
+}
+
+.result-card {
     text-align: center;
-    padding: 30px;
-    border-radius: 16px;
-    background: #f1f5f9;
+    padding: 35px;
 }
 
-.big-text {
-    font-size: 26px;
-    font-weight: 800;
+.status {
+    font-size: 32px;
+    font-weight: 900;
+    margin: 20px 0;
 }
 
-.low { color: #16a34a; }
-.high { color: #dc2626; }
+.low {
+    color: #15803d;
+}
 
-button {
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    border-radius: 12px !important;
+.high {
+    color: #b91c1c;
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.badge-low {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-high {
+    background: #fee2e2;
+    color: #7f1d1d;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ---------------- LOAD MODEL ----------------
 try:
-    with open('model.pkl', 'rb') as file:
+    with open("model.pkl", "rb") as file:
         model = pickle.load(file)
 except FileNotFoundError:
-    st.error("❌ model.pkl not found. Run training first.")
+    st.error("❌ model.pkl not found. Train the model first.")
     st.stop()
 
 # ---------------- HEADER ----------------
 st.markdown("""
 <div class="header">
     <h1>🫀 Heart Disease Prediction System</h1>
-    <p>AI-powered health risk analysis</p>
+    <p>Professional AI-powered cardiovascular risk assessment</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -89,8 +121,8 @@ left, right = st.columns([3, 2])
 
 # ================= INPUT PANEL =================
 with left:
-    st.markdown("<div class='main-card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>Patient Details</div>", unsafe_allow_html=True)
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'>Patient Information</div>", unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
     age = c1.number_input("Age", 10, 100, 55)
@@ -109,7 +141,7 @@ with left:
 
     c10, c11 = st.columns(2)
     smoke_txt = c10.selectbox("Smoking", ["No", "Yes"])
-    alco_txt = c11.selectbox("Alcohol", ["No", "Yes"])
+    alco_txt = c11.selectbox("Alcohol Consumption", ["No", "Yes"])
 
     st.markdown("<br>", unsafe_allow_html=True)
     predict = st.button("🔍 Predict Heart Disease", use_container_width=True)
@@ -118,8 +150,8 @@ with left:
 
 # ================= RESULT PANEL =================
 with right:
-    st.markdown("<div class='main-card result-box'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>Prediction Result</div>", unsafe_allow_html=True)
+    st.markdown("<div class='card result-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'>Health Risk Assessment</div>", unsafe_allow_html=True)
 
     if predict:
         # Encoding
@@ -135,20 +167,20 @@ with right:
                                gluc, smoke, alco, active]])
 
         prediction = model.predict(features)[0]
-        prob = model.predict_proba(features)[0][1] * 100
+        probability = model.predict_proba(features)[0][1] * 100
 
         st.divider()
 
         if prediction == 1:
-            st.markdown("<div class='big-text high'>❗ YES</div>", unsafe_allow_html=True)
-            st.write("**High Risk of Heart Disease**")
-            st.write(f"**Confidence:** {prob:.2f}%")
+            st.markdown("<div class='status high'>HIGH RISK</div>", unsafe_allow_html=True)
+            st.markdown("<span class='badge badge-high'>Heart Disease Detected</span>", unsafe_allow_html=True)
+            st.write(f"**Risk Probability:** {probability:.2f}%")
         else:
-            st.markdown("<div class='big-text low'>✅ NO</div>", unsafe_allow_html=True)
-            st.write("**Low Risk / Healthy Heart**")
-            st.write(f"**Confidence:** {100 - prob:.2f}%")
+            st.markdown("<div class='status low'>LOW RISK</div>", unsafe_allow_html=True)
+            st.markdown("<span class='badge badge-low'>Healthy Heart</span>", unsafe_allow_html=True)
+            st.write(f"**Health Confidence:** {100 - probability:.2f}%")
 
     else:
-        st.info("Fill details and click **Predict Heart Disease**")
+        st.info("Please fill patient details and click **Predict Heart Disease**")
 
     st.markdown("</div>", unsafe_allow_html=True)
